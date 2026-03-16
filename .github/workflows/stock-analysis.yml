@@ -24,26 +24,18 @@ jobs:
       - name: Run analysis
         run: python main.py
 
-      - name: Send daily report to Telegram
+      - name: Send newest daily report
         run: |
-          FILE="reports/report_$(date +%Y%m%d).md"
-          if [ -f "$FILE" ]; then
-            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument" \
-              -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-              -F document=@"$FILE"
-          else
-            echo "Daily report file not found: $FILE"
-            exit 1
-          fi
+          FILE=$(ls -t reports/report_*.md | head -n 1)
+          echo "Sending file: $FILE"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument" \
+            -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -F document=@"$FILE"
 
-      - name: Send market review to Telegram
+      - name: Send newest market review
         run: |
-          FILE="reports/market_review_$(date +%Y%m%d).md"
-          if [ -f "$FILE" ]; then
-            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument" \
-              -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-              -F document=@"$FILE"
-          else
-            echo "Market review file not found: $FILE"
-            exit 1
-          fi
+          FILE=$(ls -t reports/market_review_*.md | head -n 1)
+          echo "Sending file: $FILE"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument" \
+            -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -F document=@"$FILE"
