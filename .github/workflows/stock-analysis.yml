@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -24,8 +24,26 @@ jobs:
       - name: Run analysis
         run: python main.py
 
-      - name: Send Telegram Message
+      - name: Send daily report to Telegram
         run: |
-          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
-          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-          -d text="Daily stock analysis finished."
+          FILE="reports/report_$(date +%Y%m%d).md"
+          if [ -f "$FILE" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument" \
+              -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -F document=@"$FILE"
+          else
+            echo "Daily report file not found: $FILE"
+            exit 1
+          fi
+
+      - name: Send market review to Telegram
+        run: |
+          FILE="reports/market_review_$(date +%Y%m%d).md"
+          if [ -f "$FILE" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument" \
+              -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -F document=@"$FILE"
+          else
+            echo "Market review file not found: $FILE"
+            exit 1
+          fi
