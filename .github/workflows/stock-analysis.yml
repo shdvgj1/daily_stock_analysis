@@ -23,7 +23,9 @@ jobs:
 
       - name: Run analysis
         run: python main.py
-
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          
       - name: Send newest daily report
         run: |
           FILE=$(ls -t reports/report_*.md | head -n 1)
